@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Company AI Assistant</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #eef1f7;
+  }
+
+  .chat-container {
+    width: 100%;
+    height: 100vh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .chat-body {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: #f9fafb;
+  }
+
+  .message {
+    display: flex;
+    margin-bottom: 14px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .user {
+    justify-content: flex-end;
+  }
+
+  .ai {
+    justify-content: flex-start;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 8px;
+    background: #6366f1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  .user .avatar {
+    display: none;
+  }
+
+  .bubble {
+    padding: 12px;
+    border-radius: 14px;
+    max-width: 70%;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .user .bubble {
+    background: #4f46e5;
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .ai .bubble {
+    background: #e5e7eb;
+    color: #111;
+    border-bottom-left-radius: 4px;
+  }
+
+  .time {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .chat-footer {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    background: white;
+  }
+
+  input {
+    flex: 1;
+    padding: 10px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    padding: 10px 14px;
+    margin-left: 8px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #4338ca;
+  }
+
+  .typing {
+    font-size: 14px;
+    color: #6b7280;
+    margin-left: 44px;
+    margin-bottom: 10px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">IT Assistant</div>
+
+  <div class="chat-body" id="chat"></div>
+
+  <div class="chat-footer">
+    <input id="query" placeholder="Ask an IT support question..." />
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script>
+function timeNow() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatSolution(text) {
+  text = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const lines = text.split("\n").filter(l => l.trim());
+  let list = "";
+
+  lines.forEach(line => {
+    if (/^\d+\./.test(line.trim())) {
+      list += `<li>${line.replace(/^\d+\.\s*/, "")}</li>`;
+    }
+  });
+
+  if (list) {
+    return `<strong>Steps:</strong><ol>${list}</ol>`;
+  }
+
+  return `<p>${text.replace(/\n/g, "<br>")}</p>`;
+}
+
+async function send() {
+  const input = document.getElementById("query");
+  const chat = document.getElementById("chat");
+  const text = input.value.trim();
+  if (!text) return;
+
+  chat.innerHTML += `
+    <div class="message user">
+      <div>
+        <div class="bubble">${text}</div>
+        <div class="time">${timeNow()}</div>
+      </div>
+    </div>
+  `;
+
+  input.value = "";
+  chat.scrollTop = chat.scrollHeight;
+
+  const typing = document.createElement("div");
+  typing.className = "typing";
+  typing.innerText = "AI is typing...";
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: text })
+    });
+
+    const data = await res.json();
+    typing.remove();
+
+    chat.innerHTML += `
+      <div class="message ai">
+        <div class="avatar">AI</div>
+        <div>
+          <div class="bubble">${formatSolution(data.solution)}</div>
+          <div class="time">${timeNow()}</div>
+        </div>
+      </div>
+    `;
+  } catch {
+    typing.remove();
+    chat.innerHTML += `
+      <div class="message ai">
+        <div class="avatar">AI</div>
+        <div class="bubble">Server error. Please contact IT support.</div>
+      </div>
+    `;
+  }
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+document.getElementById("query").addEventListener("keydown", e => {
+  if (e.key === "Enter") send();
+});
+</script>
+
+</body>
+</html>
