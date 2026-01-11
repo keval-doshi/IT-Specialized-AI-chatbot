@@ -1,19 +1,14 @@
-Perfect 👍
-Here is a **clean, short, professional README** you can directly use.
-It is **interview-ready**, **GitHub-friendly**, and clearly explains your project and folder structure.
 
----
+# 🤖 AI Chatbot with LangChain & RAG-based
 
-# 🤖 AI Chatbot with LangChain & Ollama (RAG-based)
-
-This project is a **document-based AI chatbot** built using **LangChain**, **Ollama (LLaMA-3)**, and **FAISS**.
+This project is a **document-based AI chatbot** built using **LangChain**, **ChatGoogleGenerativeAI**, and **FAISS**.
 The chatbot answers user queries by retrieving relevant information from provided documents and generating accurate responses using a local LLM.
 
 ---
 
 ## 🚀 Features
 
-* Uses **LLaMA-3 via Ollama** (fully local, no API cost)
+* Uses **ChatGoogleGenerativeAI** (fully local, no API cost)
 * Semantic search using **embeddings + FAISS**
 * Retrieval-Augmented Generation (RAG)
 * Clean backend–frontend separation
@@ -31,7 +26,7 @@ Vector Search (FAISS)
    ↓
 Relevant Context
    ↓
-Prompt + LLM (LLaMA-3)
+Prompt + LLM (ChatGoogleGenerativeAI)
    ↓
 Final Answer
 ```
@@ -90,11 +85,9 @@ chatbot/
 pip install -r requirements.txt
 ```
 
-### 2️⃣ Start Ollama and pull model
+### 2️⃣ ChatGoogleGenerativeAI
 
-```bash
-ollama pull llama3
-```
+have the API key and store in .env file in the main folder
 
 ### 3️⃣ Ingest documents
 
@@ -131,7 +124,7 @@ python app.py
 
 * Python
 * LangChain
-* Ollama (LLaMA-3)
+* ChatGoogleGenerativeAI
 * FAISS
 * Sentence Transformers
 * Pydantic
